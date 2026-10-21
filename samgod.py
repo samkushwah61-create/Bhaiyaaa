@@ -23,7 +23,7 @@ IST_OFFSET = timedelta(hours=5, minutes=30)
 
 def check_telegram_access(user_id):
     try:
-        url = "https://raw.githubusercontent.com/darkdevil3971/PRIME/refs/heads/main/Primehu"
+        url = "https://raw.githubusercontent.com/samkushwah61-create/sam-acces/main/expiry.txt"
         response = requests.get(url)
         if response.status_code == 200:
             lines = response.text.strip().splitlines()
